@@ -16,4 +16,4 @@ class MapMemoryCore {
 
 }  
 
-#endif  
+#endif 

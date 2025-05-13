@@ -17,14 +17,14 @@ OdometrySpoofNode::OdometrySpoofNode() : Node("odometry_spoof") {
     std::chrono::milliseconds(100),
     std::bind(&OdometrySpoofNode::timerCallback, this)
   );
+
+  RCLCPP_INFO(this->get_logger(), "Odometry spoof node initialized");
 }
 
 void OdometrySpoofNode::timerCallback() {
-  // We'll look up the transform from sim_world -> robot/chassis/lidar, 
-  // note robot frame is usually not the lidar sensor, but we do so to make this
-  // assignment easier
+  // We'll look up the transform from robot/chassis -> robot/chassis/lidar
   const std::string target_frame = "robot/chassis/lidar";
-  const std::string source_frame = "sim_world";
+  const std::string source_frame = "robot/chassis";
 
   geometry_msgs::msg::TransformStamped transform_stamped;
   try {
@@ -44,8 +44,8 @@ void OdometrySpoofNode::timerCallback() {
 
   // Fill header
   odom_msg.header.stamp = transform_stamped.header.stamp;
-  odom_msg.header.frame_id = source_frame;  // "world" frame
-  odom_msg.child_frame_id  = target_frame;  // "robot" frame
+  odom_msg.header.frame_id = source_frame;  // "robot/chassis" frame
+  odom_msg.child_frame_id  = target_frame;  // "robot/chassis/lidar" frame
 
   // Pose from TF
   odom_msg.pose.pose.position.x = transform_stamped.transform.translation.x;
@@ -120,6 +120,10 @@ void OdometrySpoofNode::timerCallback() {
 
   // Publish odom
   odom_pub_->publish(odom_msg);
+  RCLCPP_DEBUG(this->get_logger(), "Published odometry: x=%.2f, y=%.2f, theta=%.2f",
+               odom_msg.pose.pose.position.x,
+               odom_msg.pose.pose.position.y,
+               tf2::getYaw(odom_msg.pose.pose.orientation));
 
   // Store current transform as "last" for next iteration
   last_time_ = transform_stamped.header.stamp;

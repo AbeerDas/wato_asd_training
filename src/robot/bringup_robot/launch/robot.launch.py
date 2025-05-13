@@ -55,7 +55,7 @@ def generate_launch_description():
     planner_param = DeclareLaunchArgument(
         'planner_param_file',
         default_value=planner_param_file,
-        description='Path to config file for producer node'
+        description='Path to config file for planner node'
     )
     planner_node = Node(
         package='planner',
@@ -65,7 +65,7 @@ def generate_launch_description():
     )
     ld.add_action(planner_param)
     ld.add_action(planner_node)
-    
+
     ##################### Control Node #####################
     control_pkg_prefix = get_package_share_directory('control')
     control_param_file = os.path.join(
@@ -74,7 +74,7 @@ def generate_launch_description():
     control_param = DeclareLaunchArgument(
         'control_param_file',
         default_value=control_param_file,
-        description='Path to config file for producer node'
+        description='Path to config file for control node'
     )
     control_node = Node(
         package='control',
