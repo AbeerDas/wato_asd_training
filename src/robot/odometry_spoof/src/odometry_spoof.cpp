@@ -3,6 +3,16 @@
 
 #include "odometry_spoof.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2/LinearMath/Matrix3x3.h"
+
+double quaternionToYaw(const geometry_msgs::msg::Quaternion& quat) {
+    tf2::Quaternion q(quat.x, quat.y, quat.z, quat.w);
+    tf2::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+    return yaw;
+}
 
 OdometrySpoofNode::OdometrySpoofNode() : Node("odometry_spoof") {
   // Create publisher for Odometry messages
@@ -123,7 +133,7 @@ void OdometrySpoofNode::timerCallback() {
   RCLCPP_DEBUG(this->get_logger(), "Published odometry: x=%.2f, y=%.2f, theta=%.2f",
                odom_msg.pose.pose.position.x,
                odom_msg.pose.pose.position.y,
-               tf2::getYaw(odom_msg.pose.pose.orientation));
+               quaternionToYaw(odom_msg.pose.pose.orientation));
 
   // Store current transform as "last" for next iteration
   last_time_ = transform_stamped.header.stamp;
